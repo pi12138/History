@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>搜索到的书籍列表</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <h4 class="page-header">你好！<a href="/" title="点击回到主页">{{ user_name }}</a></h4>
+
+        <ul class="list-group">
+            <div class="col-md-4">
+                <li class="list-group-item"><a href="/user/inquire/">查询已借阅书籍</a></li>
+                <li class="list-group-item"><a href="/user/books_list/">图书列表</a></li>
+                <li class="list-group-item"><a href="/user/not_returned_books">未归还书籍</a></li>
+                <li class="list-group-item"><a href="/user/alter_user_info/">账户信息修改</a></li>
+                <li class="list-group-item"><a href="/user/delete_user_info/">账号注销</a></li>
+            </div>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="col-md-8">
+        {% if found_book %}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>书籍编号</th>
+                <th>书籍名称</th>
+                <th>书籍作者</th>
+                <th>书籍出版社</th>
+                <th>出版日期</th>
+                <th>在馆数量</th>
+                <th>借阅按钮</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{ found_book.ISBN }}</td>
+                <td>{{ found_book.book_name }}</td>
+                <td>{{ found_book.book_author }}</td>
+                <td>{{ found_book.book_publish }}</td>
+                <td>{{ found_book.publication_date }}</td>
+                <td>{{ found_book.book_num }}</td>
+                <td>
+                    {% if found_book.book_num > 0 %}
+                    <form action="/user/borrowing_books/" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="borrowing_book_ISBN" value="{{ found_book.ISBN }}">
+                        <input type="submit" value="借阅">
+                    </form>
+                    {% else %}
+                        不可借阅
+                    {% endif %}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        {% endif %}
+        </div>
+    </div>
+</body>
+</html>

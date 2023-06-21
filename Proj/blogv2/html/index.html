@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- <title>Pipipip的个人博客</title> -->
+    <title></title>
+    <script src="../static/jquery-1.12.4.min.js"></script>
+    <link rel="stylesheet" href="../static/bootstrap-3.3.7-dist/css/bootstrap.css">
+    <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="../static/font-awesome-4.7.0/css/font-awesome.css">
+    <script src="../static/vue-2.4.0.js"></script>
+    <script src="../static/vue-resource-1.3.4.js"></script>
+    <style>
+        body {
+            font-family: Georgia, serif;
+        }
+        
+        #info .list-group-item {
+            border: 0px;
+        }
+        
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+
+
+<body>
+    <div class="container">
+
+        <nav class="navbar navbar-default" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/index/">Pipipip</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/">欢迎</a></li>
+                    <li class="active"><a href="/index/">主页</a></li>
+                    <li><a href="/message_board/">留言板</a></li>
+                    <li><a href="/archive/">归档</a></li>
+                    <li><a href="/user_statistics/">访问统计</a></li>                    
+
+                </ul>
+                <form class="navbar-form navbar-right" role="search" id="search_bar" action="/search/" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" name="keyword" class="form-control" placeholder="输入文章关键字" required {% if keyword %} value="{{ keyword }}" {% endif %}>
+                    </div>
+                    <button type="submit" class="btn btn-default" v-on="searchArticle">搜索</button>
+                </form>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+        {% verbatim %}
+        <!-- 左边的容器 -->
+        <div class="container col-sm-4" id="userinfo">
+            <div class="row">
+                <div class="col-sm-10">
+                    <a href="#" class="thumbnail">
+                        <img v-bind:src="'/'+avatar" alt="..." style="height: 200px; width: 100%;">
+                    </a>
+                </div>
+                <h2 id="name" class="col-sm-10" v-cloak>{{ name }}
+                    <br>
+                    <small>{{ nickname }}</small>
+                    <br>
+                    <small>{{ words }}</small>
+                </h2>
+                <h3></h3>
+
+                <ul class="list-group col-sm-10" id="info" v-cloak>
+                    <li class="list-group-item"><i class="fa fa-globe" aria-hidden="true"></i> {{ location }}</li>
+                    <a class="list-group-item" v-bind:href="github" target="_blank">
+                        <i class="fa fa-github" aria-hidden="true"></i> {{ github }}
+                    </a>
+                    <li class="list-group-item"><i class="fa fa-envelope-o" aria-hidden="true"></i> {{ email }}</li>
+                </ul>
+                <h4 class="col-sm-10"></h4>
+
+            </div>
+        </div>
+
+        <!-- 右边的容器 -->
+        <div class="container col-sm-8" id="articles">
+            <!-- 内容列表 -->
+            <div class="row">
+                <div class="list-group">
+                    <a class="list-group-item" v-for="article in article_list" v-bind:href="'/article/' + article.id + '/'">
+                        <h3 class="list-group-item-heading" v-text="article.title"></h3>
+                        <p class="list-group-item-text">
+                            <span class="label label-default" v-text="article.category_name">category</span>
+                            <span class="label label-default" v-text="article.update_time">update</span>
+                            <span class="label label-default" v-text="'阅读数：'+article.article_read_number">read</span>
+                            <span class="label label-default" v-text="'评论数：'+article.article_comment_number">read</span>
+                        </p>
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- 下面翻页 -->
+            <div class="row">
+                <nav aria-label="...">
+                    <ul class="pagination">
+                        <li class=""><a href="#" aria-label="Previous" @click="getCurrentPage(1)"><span aria-hidden="true">&laquo;&laquo;</span></a></li>
+                        <li class=""><a href="#" aria-label="Previous" @click="getPreviousPage"><span aria-hidden="true">&laquo;</span></a></li>
+                        <li v-for="num in num_page_list"><a href="#" @click="getCurrentPage(num)" v-cloak>{{ num }}</a></li>
+                        <li class=""><a href="#" aria-label="Next" @click="getNextPage"><span aria-hidden="true">&raquo;</span></a></li>
+                        <li class=""><a href="#" aria-label="Next" @click="getCurrentPage(num_pages)"><span aria-hidden="true">&raquo;&raquo;</span></a></li>
+                    </ul>
+                    <ul class="pagination pull-right">
+                        <li class="pull-right"><a>一共{{ num_pages }}页，当前在 {{ num_page }} 页</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endverbatim %}
+
+    <script type="text/javascript">
+        var articles = new Vue({
+            el: "#articles",
+            data: {
+                article_list: [],
+                previous_url: "",
+                next_url: "",
+                count: 0,
+                url: '/api/blogv2/articles/',
+                num_page_list: [],
+                num_page: 0,
+                num_pages: 0
+            },
+            methods: {
+                getArticleList(url) {
+                    this.$http.get(url).then(response => {
+                        // console.log(response);
+                        this.article_list = response.body.results;
+                        this.previous_url = response.body.previous;
+                        this.next_url = response.body.next;
+                        this.count = response.body.count;
+                        this.num_page_list = response.body.num_page_list;
+                        this.num_page = response.body.number;
+                        this.num_pages = response.body.num_pages;
+
+                    }, error => {
+                        console.log("获取文章列表失败")
+                    })
+                },
+
+                getPreviousPage() {
+                    if (this.previous_url != null) {
+                        this.getArticleList(this.previous_url);
+                    } else {
+                        alert("当前是首页");
+                        return
+                    }
+                },
+
+                getNextPage() { // 获取下一页数据
+                    if (this.next_url != null) {
+                        this.getArticleList(this.next_url);
+                    } else {
+                        alert("当前是尾页");
+                        return
+                    }
+                },
+
+                getCurrentPage(num) { // 获取当前页数据
+                    var url = '/api/blogv2/articles/?page=' + num
+                    this.getArticleList(url);
+                
+                },
+
+            },
+            created() {
+                this.getArticleList(this.url);
+            },
+        })
+
+        var userinfo = new Vue({
+            el: "#userinfo",
+            data: {
+                name: '',
+                nickname: '',
+                github: "",
+                email: '',
+                words: '',
+                avatar: '',
+                location: "",
+            },
+            methods: {
+                setTitle(){
+                    document.title = this.nickname+"的个人博客";                    
+                },
+
+                getUserInfo(){
+                    let url = '/api/userinfo/userinfo/';
+                    this.$http.get(url).then(response => {
+                        // console.log(response);
+                        this.name = response.body.name;
+                        this.nickname = response.body.nickname;
+                        this.github = response.body.github;
+                        this.email = response.body.email;
+                        this.words = response.body.words;
+                        this.avatar = response.body.avatar;
+                        this.location = response.body.location;
+
+                        this.setTitle();                
+
+                    }, error => {
+                        console.log("获取用户信息失败！");
+                    });
+                    
+                },    
+
+            },
+            created(){
+                this.getUserInfo();
+            }
+        })
+    </script>
+</body>
+
+</html>

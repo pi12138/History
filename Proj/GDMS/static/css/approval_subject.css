@@ -1,0 +1,14 @@
+
+#markForm {
+    z-index: 1000;
+    position: absolute;
+    top: 100px;
+
+    /* 水平居中的方法 */
+    right: 50%;
+    transform: translateX(50%);
+
+    background-color: white;
+    border: 1px solid deepskyblue;
+    border-radius: 10px;
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ keyword }} 的搜索结果 </title>
+    <script src="/static/jquery-1.12.4.min.js"></script>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.css">
+    <script src="/static/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.css">
+    <script src="/static/vue-2.4.0.js"></script>
+    <script src="/static/vue-resource-1.3.4.js"></script>
+    <script src="/static/showdown.min.js"></script>
+    <style>
+        body {
+            font-family: Georgia, serif;
+        }
+        
+        #info .list-group-item {
+            border: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <nav class="navbar navbar-default" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/index/">Pipipip</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/">欢迎</a></li>
+                    <li><a href="/index/">主页</a></li>
+                    <li><a href="/message_board/">留言板</a></li>
+                    <li><a href="/archive/">归档</a></li>
+
+                    <li><a href="/user_statistics/">访问统计</a></li>                    
+
+                </ul>
+                <form class="navbar-form navbar-right" role="search" id="search_bar" action="/search/" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" name="keyword" class="form-control" placeholder="输入文章关键字" required {% if keyword %} value="{{ keyword }}" {% endif %}>
+                    </div>
+                    <button type="submit" class="btn btn-default" v-on="searchArticle">搜索</button>
+                </form>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="row clearfix">
+            <div class="col-md-2 column">
+            </div>
+            <div class="col-md-8 column">
+                <div class="list-group" id="article_list">
+                    <div class="list-group-item active">
+                        <h3 class="list-group-item-heading">
+                            {{ keyword }} 的搜索结果
+                            <span class="label label-default pull-right" v-text="count"></span>
+                        </h3>
+                    </div>
+                    <a class="list-group-item" v-for="article in article_list" v-bind:href="'/article/' + article.id + '/'">
+                        <h3 class="list-group-item-heading" v-text="article.title"></h3>
+                        <p class="list-group-item-text">
+                            <span class="label label-default" v-text="article.category_name">category</span>
+                            <span class="label label-default" v-text="article.update_time">update</span>
+                            <span class="label label-default" v-text="'阅读数：'+article.article_read_number">read</span>
+                            <span class="label label-default" v-text="'评论数：'+article.article_comment_number">read</span>
+                        </p>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-2 column">
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var article_list = new Vue({
+            el: "#article_list",
+            data: {
+                article_list: [],
+                count: 0
+            },
+            methods: {
+                searchResult() { // 获取搜索结果
+                    var url = "/api/blogv2/articles/search_article/"
+                    var params = {
+                        'keyword': $("input[name='keyword']").val()
+                    };
+                    this.$http.get(url, {
+                        params: params
+                    }).then(response => {
+                        this.article_list = response.body;
+                        this.count = this.article_list.length;
+                    }, error => {
+                        console.log('搜索结果获取失败！');
+                    })
+                }
+            },
+            created() {
+                this.searchResult();
+            }
+        })
+    </script>
+</body>
+
+</html>

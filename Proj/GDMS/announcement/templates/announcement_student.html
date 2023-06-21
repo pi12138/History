@@ -1,0 +1,164 @@
+{% load extra_filters %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公告 | 学生 | 毕业设计管理系统</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/announcement.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">毕业设计管理系统</a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li><a href="/subject/select_subject/">选择课题</a></li>
+                    <li><a href="/process/student/">毕业设计过程</a></li>
+                    <li class="active"><a href="/announcement/student/">公告</a></li>
+                    <li><a href="/message_board/student/">师生交流</a></li>
+                    <li><a href="/user/student_settings/">个人主页</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/logout/">退出</a></li>
+                </ul>
+                <div class="navbar-right">
+                    <p class="navbar-text">{{ user | get_username }}</p>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- 公告 -->
+    <div class="container" id="announcement">
+        <!-- 标题 -->
+        <div class="page-header">
+            <h1>公告<small> 公告列表</small></h1>
+        </div>
+
+        <!-- 公告列表 -->
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <td>标题</td>
+                    <td>发布人</td>
+                    <td>发布时间</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(item, index) in announcementList" :key="item.id">
+                    <td @click="showAnnouncement(index)"><a href="#" v-text="item.title" title="点击查看公告详情"></a></td>
+                    <td v-text="item.publisher_name"></td>
+                    <td v-text="item.publish_time"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!--翻页-->
+        <div class="row">
+
+                 <nav class="pull-right col-md-2">
+                      <ul class="pagination">
+                        <li class="" ref="previousBtn">
+                            <a @click.prevent="getAnnouncementList(previousUrl)">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="active">
+                            <a href="#" v-text="page"></a>
+                        </li>
+                        <li class="" ref="nextBtn">
+                            <a @click.prevent="getAnnouncementList(nextUrl)">
+                                <span class="aria-hidden">&raquo;</span>
+                            </a>
+                        </li>
+                      </ul>
+                    </nav>
+            </div>
+
+        <hr>
+
+        <!--创建公告按钮-->
+        <!--
+        <div class="row">
+            <div class="col-md-1">
+                <button type="button" class="btn btn-primary" @click="writeAnnouncement">新建公告</button>
+            </div>
+        </div>
+        -->
+
+        <!--公告表单-->
+        <form action="" ref="announcementForm" class="form container hidden" id="announcementForm">
+            <div class="row">
+                <div class="page-header">
+                    <h3 class="text-center">公告</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-8">
+                    <label for="">标题</label>
+                    <input type="text" class="form-control" v-model="title">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-md-2">
+                    <label for="">发布人</label>
+                    <input type="text" class="form-control" disabled v-model="publisher_name">
+                </div>
+                <div class="form-group col-md-3">
+                    <label for="">发布时间</label>
+                    <input type="text" class="form-control" disabled v-model="publish_time">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-md-12">
+                    <label for="">公告内容</label>
+                    <textarea cols="30" rows="3" class="form-control" v-model="publish_content"></textarea>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-md-2">
+                    <label for="">公告文件 </label>
+                    <input class="btn btn-default" @click="uploadFile" type="button" value="点击上传">
+                </div>
+                <div class="form-group col-md-3">
+                    <input type="file" class="form-control" style="display: none;" id="uploadFile" ref="uploadFile" @change="getFileInfo">
+                    <input type="text" class="form-control" :value="filename" disabled>
+                </div>
+                <div class="form-group col-md-1">
+                    <button class="btn btn-primary" @click="downloadFile" type="button">点击下载</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-md-2">
+                    <button class="btn btn-primary" type="button" @click="createAnnouncement" ref="submitBtn">创建公告</button>
+                </div>
+                <div class="form-group col-md-2">
+                    <button type="button" class="btn btn-default" @click="hiddenAnnouncementForm">关闭当前</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+
+<script src="/static/js/vue.js"></script>
+<script src="/static/js/axios.min.js"></script>
+<script src="/static/js/announcement.js"></script>
+</html>

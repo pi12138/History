@@ -1,0 +1,50 @@
+{% load extra_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师 | 毕业设计管理系统</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">毕业设计管理系统</a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li><a href="/subject/declare_subject/">申报课题</a></li>
+                    <li><a href="/subject/approval_application/">学生选题</a></li>
+                    <li><a href="/process/teacher/">毕业设计过程</a></li>
+                    <li><a href="/announcement/teacher/">公告</a></li>
+                    <li><a href="/message_board/teacher/">师生交流</a></li>
+                    <li><a href="/user/teacher_settings/">个人主页</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/logout/">退出</a></li>
+                </ul>
+                <div class="navbar-right">
+
+                    <p class="navbar-text">{{ user|get_username }}</p>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+
+
+</body>
+
+</html>

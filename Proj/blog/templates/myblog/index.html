@@ -1,0 +1,62 @@
+{% extends 'myblog/base.html' %}
+{% load static from staticfiles %}
+
+{% block title %} pipipipip的博客 {% endblock title %}
+
+
+{% block container %}
+<div class="container">
+  <div class="row">
+
+    <div class="col-sm-4">
+      <div style="height: 50px;"></div>
+      <div class="fakeimg">
+          <div style="float: left; margin-right: 20px;"></div>
+          <img src="{% static 'image/water.jpg' %}" style="height: 200px; float: left;" class="img-thumbnail">
+      </div>
+{#      <p>关于我的介绍..</p>#}
+
+      <h3>最近被评论过的文章</h3>
+      <ul class="nav nav-pills nav-stacked">
+          {% for comment in comments %}
+              <li><a href="{% url 'blog:show' comment.article.id %}">{{ comment.article.title }}</a></li>
+          {% endfor %}
+      </ul>
+      <hr class="hidden-sm hidden-md hidden-lg">
+    </div>
+    <div class="col-sm-8">
+
+      {% for article in articles %}
+
+          <h3><a href="{% url 'blog:show' article.id %}">{{ article.title }}</a></h3>
+
+          <h5><span>{{ article.category }}</span><span class="line"></span><span>{{ article.update_time }}</span></h5>
+
+      {% endfor %}
+
+    </div>
+  </div>
+  <div class="row">
+      <div class="col-sm-4"></div>
+      <div class="col-sm-8">
+        <ul class="pagination">
+            {% if articles.has_previous %}
+            <li><a href="{% url 'blog:index' articles.previous_page_number %}">&laquo;</a></li>
+            {% endif %}
+            {% for index in page_list %}
+                {% if index == articles.number %}
+                    <li class="active"><a href="javascript:void(0);">{{ index }}</a></li>
+                {% else %}
+                     <li><a href="{% url 'blog:index' index %}">{{ index }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if articles.has_next %}
+            <li><a href="{% url 'blog:index' articles.next_page_number %}">&raquo;</a></li>
+            {% endif %}
+        </ul>
+    </div>
+  </div>
+</div>
+{% endblock container %}
+
+

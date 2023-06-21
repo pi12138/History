@@ -1,0 +1,310 @@
+{% load extra_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>申报课题</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/declare_subject.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">毕业设计管理系统</a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">申报课题</a></li>
+                    <li><a href="/subject/approval_application/">学生选题</a></li>
+                    <li><a href="/process/teacher/">毕业设计过程</a></li>
+                    <li><a href="/message_board/teacher/">师生交流</a></li>
+                    <li><a href="/announcement/teacher/">公告</a></li>
+                    <li><a href="/user/teacher_settings/">个人主页</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/logout/">退出</a></li>
+                </ul>
+                <div class="navbar-right">
+
+                    <p class="navbar-text">{{ user|get_username }}</p>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- 已申报课题列表 -->
+    <div class="container" id="subject_list">
+        <div class="page-header">
+            <h1>申报课题
+                <small>已申报课题列表</small>
+            </h1>
+        </div>
+
+        <!-- 课题列表 -->
+        <div class="subjects_table">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>课题编号</th>
+                  <th>课题名称</th>
+                  <th>人数</th>
+                  <th>审核人</th>
+                  <th>审核状态</th>
+                  <th>选题学生</th>
+                    <th>申报时间</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                {% for p in page.object_list %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td><a href="#" @click="showSubjectInfo({{ p.id }})">{{ p.subject_name }}</a></td>
+                    <td>{{ p.number_of_people }}</td>
+                    <td>{{ p.reviewer | handler_none }}</td>
+                    <td>{{ p.get_review_result_display }}</td>
+                    <td>{{ p.select_student | handler_none }}</td>
+                    <td>{{ p.declare_time }}</td>
+                </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+
+            <div class="row">
+                <div class="col-md-10 text-info" style="height: 78px;line-height: 78px;">
+                    一共 {{ page.paginator.count }} 记录， 当前 {{ page.number }} / {{ page.paginator.num_pages }} 页
+                </div>
+
+                 <nav class="pull-right col-md-2">
+                      <ul class="pagination">
+                          {% if page.has_previous %}
+                               <li class=""><a href="/subject/declare_subject/?page={{ page.previous_page_number }}">
+                                   <span aria-hidden="true">&laquo;</span></a></li>
+                          {% else %}
+                               <li class="disabled"><a href="#"><span aria-hidden="true">&laquo;</span></a></li>
+                          {% endif %}
+                        <li class="active"><a href="#">{{ page.number }}</a></li>
+
+                      {% if page.has_next %}
+                          <li class=""><a href="/subject/declare_subject/?page={{ page.next_page_number }}">
+                              <span class="aria-hidden">&raquo;</span></a></li>
+                      {% else %}
+                          <li class="disabled"><a href="#"><span class="aria-hidden">&raquo;</span></a></li>
+                      {% endif %}
+
+
+                      </ul>
+                    </nav>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- 填写申报表 -->
+    <div id="app" class="container">
+        <div class="row">
+            <hr>
+            <button class="btn btn-primary" v-on:click="showTable">填写申报表</button>
+            <button class="btn btn-default hidden" @click="hiddenTable" id="hidden_btn">隐藏申报表</button>
+            <hr>
+        </div>
+
+        <div class="hidden" name="declare_subject_table" id="hidden_subject_table">
+            <div class="form" role="form">
+                <div class="row">
+                <div class="form-group col-md-12">
+                    <label for="subject_name" class="">课题名称</label>
+                    <input type="text" class="form-control" id="subject" placeholder="请输入课题名称" v-model="subjectName" required>
+                </div>
+                </div>
+
+                <div class="row">
+                <div class="form-group col-md-6">
+                    <label for="teacher" class="">出题教师</label>
+                    <!-- <input type="text" class="form-control" id="teacher" placeholder="请填写出题教师" v-model="teacher" value=""> -->
+                    <div class="form-control">{{ user.teacher.name }}</div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="office">教研室</label>
+                    <!-- <input type="text" class="form-control" id="office" placeholder="教研室" v-model="office"> -->
+                    <div class="form-control">{{ user.teacher.office }}</div>
+                </div>
+                </div>
+
+                <div class="row">
+                <div class="form-group col-md-6">
+                    <label for="number_of_people" class="">课题人数</label>
+                    <input type="number" class="form-control" id="number_of_people" placeholder="课题人数" v-model="number" required>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="student">已选学生</label>
+                    <!-- <input type="text" class="form-control" id="student" placeholder="已选学生" v-model="student"> -->
+                    <div class="form-control"></div>
+                </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">课题简述</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写课题简述" v-model="subjectDesc" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">预期目标</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写预期目标" v-model="expectGoal" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">对学生知识和能力的要求</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写对学生知识和能力的要求" v-model="require" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">所需条件</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写所需条件" v-model="requiredConditions" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">参考资料</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写参考资料" v-model="references" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-2">
+                        <button class="form-control btn btn-primary" @click="declareSubject">提交申报课题表</button>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+    <div class="hidden-data">
+        <input type="hidden" value="{{ user.teacher.id }}" name="teacher-id">
+        <input type="hidden" value="{{ user.teacher.office_id }}" name="office-id">
+    </div>
+
+    <!-- 遮罩层 -->
+    <div class="container hidden" id="mark_form" ref="mark_form">
+        <div class="form" role="form">
+                <div class="row">
+                    <h3 class="text-center">查看或修改申报表</h3>
+                    <hr>
+                </div>
+                </div>
+                <div class="row">
+                <div class="form-group col-md-12">
+                    <label for="subject_name" class="">课题名称</label>
+                    <input type="text" class="form-control" placeholder="请输入课题名称" v-model="subjectName" required>
+                </div>
+                </div>
+
+                <div class="row">
+                <div class="form-group col-md-6">
+                    <label for="teacher" class="">出题教师</label>
+                    <!-- <input type="text" class="form-control" id="teacher" placeholder="请填写出题教师" v-model="teacher" value=""> -->
+                    <div class="form-control" v-text="teacher"></div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="office">教研室</label>
+                    <!-- <input type="text" class="form-control" id="office" placeholder="教研室" v-model="office"> -->
+                    <div class="form-control" v-text="office"></div>
+                </div>
+                </div>
+
+                <div class="row">
+                <div class="form-group col-md-6">
+                    <label for="number_of_people" class="">课题人数</label>
+                    <input type="number" class="form-control" id="number_of_people" placeholder="课题人数" v-model="number" required>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="student">已选学生</label>
+                    <!-- <input type="text" class="form-control" id="student" placeholder="已选学生" v-model="student"> -->
+                    <div class="form-control" v-text="student"></div>
+                </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">课题简述</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写课题简述" v-model="subjectDesc" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">预期目标</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写预期目标" v-model="expectGoal" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">对学生知识和能力的要求</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写对学生知识和能力的要求" v-model="require" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">所需条件</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写所需条件" v-model="requiredConditions" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">参考资料</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写参考资料" v-model="references" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row hidden" ref="hidden_div">
+                    <div class="form-group col-md-12">
+                        <label for="">未通过原因</label>
+                        <textarea name="" id="" cols="30" rows="3" class="form-control" v-model="review_reason" disabled></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-3">
+                        <button class="form-control btn btn-primary" @click="alterSubject" title="提交当前修改的申报表" ref="submitBtn">提交当前修改</button>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <button class="form-control btn btn-default" @click="setMarkFormHidden" title="关闭当前申报表">关闭当前</button>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+
+    <script src="/static/js/vue.js"></script>
+    <script src="/static/js/axios.min.js"></script>
+    <script src="/static/js/declare_subject.js"></script>
+</body>
+
+</html>

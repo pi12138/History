@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>留言板</title>
+    <script src="../static/jquery-1.12.4.min.js"></script>
+    <link rel="stylesheet" href="../static/bootstrap-3.3.7-dist/css/bootstrap.css">
+    <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="../static/font-awesome-4.7.0/css/font-awesome.css">
+    <script src="../static/vue-2.4.0.js"></script>
+    <script src="../static/vue-resource-1.3.4.js"></script>
+    <style>
+        body {
+            font-family: Georgia, serif;
+        }
+        
+        #info .list-group-item {
+            border: 0px;
+        }
+        
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+
+
+<body>
+    <div class="container">
+
+        <nav class="navbar navbar-default" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/index/">Pipipip</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/">欢迎</a></li>
+                    <li><a href="/index/">主页</a></li>
+                    <li class="active"><a href="/message_board/">留言板</a></li>
+                    <li><a href="/archive/">归档</a></li>
+                    <li><a href="/user_statistics/">访问统计</a></li>                    
+
+
+                </ul>
+                <form class="navbar-form navbar-right" role="search" id="search_bar" action="/search/" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" name="keyword" class="form-control" placeholder="输入文章关键字" required {% if keyword %} value="{{ keyword }}" {% endif %}>
+                    </div>
+                    <button type="submit" class="btn btn-default" v-on="searchArticle">搜索</button>
+                </form>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <div class="jumbotron">
+
+                    <h3>你好， 可以在这留下你的宝贵意见，供作者对网站进行更新和修改。</h3>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="row clearfix" id="message">
+            <div class="col-md-12 column">
+                <form action="" method="POST" role="form" onsubmit="return false">
+                    {% csrf_token %}
+                    <textarea name="content" id="input" class="form-control" rows="3" required="required" placeholder="留下你的意见" v-model="content" v-text="content"></textarea>
+                    <br>
+                    <div class="col-sm-8">
+                        <input type="email" name="email" class="form-control col-sm-6" v-model="email" value="email" required="required" title="留下你的邮箱(必填)" placeholder="留下你的邮箱(必填)">
+                    </div>
+                    <div class="col-sm-1"></div>
+                    <button type="submit" class="btn btn-primary" v-on:click.self="submitComment">发送</button>
+                    <div class="col-sm-1"></div>
+                    <button type="button" class="btn btn-default" v-on:dblclick.self="clearContent">双击清空</button>
+                </form>
+            </div>
+        </div>
+        <br>
+
+        <!-- 留言列表 -->
+        <div class="row clearfix" id="message_list">
+            <div class="col-md-12 column">
+                <div class="list-group">
+
+                    <h4 class="list-group-item active">留言列表<span class="label label-default pull-right" v-text="count"></span></h4>
+
+                    <a href="#" class="list-group-item" v-for="message in message_list">
+                        <h4 class="list-group-item-heading" v-text="message.email + ' ' + message.pub_date"></h4>
+                        <p class="list-group-item-text" v-text="message.content"></p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var message = new Vue({
+            el: '#message',
+            data: {
+                email: "",
+                content: ""
+            },
+            methods: {
+                submitComment() {
+                    if (this.email === "" | this.email.search("@") == -1) {
+                        alert("请输入正确邮箱地址。");
+                        return
+                    }
+
+                    var csrf = $("input[name='csrfmiddlewaretoken']");
+                    var url = "/api/message_board/message_board/";
+                    var params = {
+                        email: this.email,
+                        content: this.content,
+                        csrfmiddlewaretoken: csrf
+                    };
+                    this.$http.post(url, params).then(res => {
+                        console.log(res);
+                        message_list.getMessageList();
+                    }, error => {
+                        console.log("提交留言错误！")
+                    })
+                },
+
+                clearContent() {
+                    this.content = "";
+                }
+            }
+        })
+
+        var message_list = new Vue({
+            el: "#message_list",
+            data: {
+                message_list: [],
+                count: 0
+            },
+            methods: {
+                getMessageList() {
+                    var url = "/api/message_board/message_board/";
+                    this.$http.get(url).then(res => {
+                        console.log(res.body)
+                        this.message_list = res.body.results;
+                        this.count = res.body.count;
+                    }, error => {
+                        console.log("获取留言列表失败")
+                    })
+                }
+            },
+            created() {
+                this.getMessageList()
+            }
+        })
+    </script>
+</body>
+
+</html>

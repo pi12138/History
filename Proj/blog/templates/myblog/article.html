@@ -1,0 +1,130 @@
+{% extends 'myblog/base.html' %}
+{% load static from staticfiles %}
+
+{% block title %}{{ article.title }}{% endblock title %}
+
+{% block top_box %}{% endblock top_box %}
+
+
+{% block container %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-4">
+      <div style="height: 50px;"></div>
+      <div class="fakeimg">
+          <div style="float: left; margin-right: 20px;"></div>
+          <img src="{% static 'image/water.jpg' %}" style="height: 200px; float: left;" class="img-thumbnail">
+      </div>
+{#      <p>关于我的介绍..</p>#}
+
+      <h3>与本文类似的文章</h3>
+      <ul class="nav nav-pills nav-stacked">
+          {% for similar_article in similar_articles_list %}
+              <li><a href="{% url 'blog:show' similar_article.id %}">{{ similar_article.title }}</a></li>
+          {% empty %}
+              <li>暂无类似文章</li>
+          {% endfor %}
+      </ul>
+      <hr class="hidden-sm hidden-md hidden-lg">
+    </div>
+    <div class="col-sm-8">
+
+              {% load markdown_deux_tags %}
+          <p>{{ article.content|markdown|safe }}</p>
+
+    </div>
+
+  </div>
+  <div class="row">
+      <div class="col-sm-4"></div>
+      <div class="col-sm-8">
+        <form role="form-inline">
+            {% csrf_token %}
+          <div class="form-group">
+            <label for="name">想对作者说些什么：</label>
+            <textarea class="form-control" rows="3" name="content"></textarea>
+          </div>
+            <div class="col-sm-7">
+              <div class="form-group">
+                <input type="email" class="form-control" name="email" placeholder="请输入你的邮箱地址方便反馈信息">
+              </div>
+            </div>
+            <div class="col-sm-1">
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="hidden" name="article_id" value="{{ article.id }}">
+                      <button type="button" class="btn btn-default" id="submit">提交</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="hidden" name="article_id" value="{{ article.id }}">
+                      <button type="button" class="btn btn-default" id="display_comment_list">点击查看评论(评论数:{{ comment_list|length }})</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+      </div>
+  </div>
+  <div class="row" style="display: none;" id="comment_list">
+      <div class="list-group">
+          {% for comment in comment_list %}
+            <a href="javascript:void(0);" class="list-group-item">
+                <h4 class="list-group-item-heading">
+                    {% if comment.email %}
+                        {{ comment.email }}&nbsp;&nbsp;|&nbsp;&nbsp;{{ comment.pub_date }}
+                    {% else %}
+                        未留下email的用户&nbsp;&nbsp;|&nbsp;&nbsp;{{ comment.pub_date }}
+                    {% endif %}
+                </h4>
+                <p class="list-group-item-text">
+                    {{ comment.content }}
+                </p>
+            </a>
+          {% empty %}
+              <a href="#" class="list-group-item">
+                <h4 class="list-group-item-heading">
+                    当前无评论
+                </h4>
+              </a>
+          {% endfor %}
+      </div>
+  </div>
+</div>
+{% endblock container %}
+{% block bottom_box %}{% endblock bottom_box %}
+
+{% block bottom_js %}
+<script type="text/javascript">
+    $('#submit').click(function () {
+        var email = $('input[name="email"]').val();
+        var content = $('textarea[name="content"]').val();
+        var article_id = $('input[name="article_id"]').val();
+        var csrf = $('input[name="csrfmiddlewaretoken"]').val();
+
+        var params = {
+            'email': email,
+            'content': content,
+            'article_id': article_id,
+            'csrfmiddlewaretoken': csrf
+        }
+
+        $.post('/comment/submit/', params, function (data) {
+            if (data.res == 0){
+                alert(data.message);
+                window.location.reload();
+            }
+            else{
+                alert(data.res + data.errmsg);
+            }
+        });
+    });
+
+    $('#display_comment_list').click(function () {
+        $('#comment_list').show();
+    });
+
+</script>
+{% endblock bottom_js %}

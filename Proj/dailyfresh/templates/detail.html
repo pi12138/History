@@ -1,0 +1,205 @@
+{% extends 'base_detail.html' %}
+{% load static from staticfiles %}
+
+{% block goods_detail_con %}
+    <div class="goods_detail_con clearfix">
+		<div class="goods_detail_pic fl"><img src="{{ goods.image.url }}"></div>
+
+		<div class="goods_detail_list fr">
+			<h3>{{ goods.name }}</h3>
+			<p>{{ goods.desc }}</p>
+			<div class="prize_bar">
+				<span class="show_pirze">¥<em>{{ goods.price }}</em></span>
+				<span class="show_unit">单  位：{{ goods.unite }}</span>
+			</div>
+            <div>
+                <p>其他规格：</p>
+                <ul>
+                    {% for same in same_goods %}
+                    <li><a href="{% url 'goods:detail' same.id %}">{{ same.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+			<div class="goods_num clearfix">
+				<div class="num_name fl">数 量：</div>
+				<div class="num_add fl">
+					<input type="text" class="num_show fl" value="1">
+					<a href="javascript:;" class="add fr">+</a>
+					<a href="javascript:;" class="minus fr">-</a>
+				</div>
+			</div>
+			<div class="total">总价：<em>16.80元</em></div>
+			<div class="operate_btn">
+                {% csrf_token %}
+				<a href="javascript:;" class="buy_btn">立即购买</a>
+				<a href="javascript:;" goods_id="{{ goods.id }}" class="add_cart" id="add_cart">加入购物车</a>
+			</div>
+		</div>
+	</div>
+{% endblock goods_detail_con %}
+
+{% block main_wrap %}
+	<div class="main_wrap clearfix">
+		<div class="l_wrap fl clearfix">
+			<div class="new_goods">
+				<h3>新品推荐</h3>
+				<ul>
+                    {% for new in new_goods %}
+					<li>
+						<a href="{% url 'goods:detail' new.id %}"><img src="{{ new.image.url }}"></a>
+						<h4><a href="{% url 'goods:detail' new.id %}">{{ new.name }}</a></h4>
+						<div class="prize">￥{{ new.price }}</div>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+
+		<div class="r_wrap fr clearfix">
+			<ul class="detail_tab clearfix">
+				<li class="active" id="tag_detail">商品介绍</li>
+				<li id="tag_comment">评论</li>
+			</ul>
+
+			<div class="tab_content" id="tab_detail">
+				<dl>
+					<dt>商品详情：</dt>
+					<dd>{{ goods.goods.detail|safe }}</dd>
+				</dl>
+			</div>
+            <div class="tab_content" id="tab_comment" style="display: none">
+				<dl>
+                    {% for com in comments %}
+					<dt>评论时间：{{ com.update_time }}&nbsp;&nbsp;用户名:{{ com.order.user.username }}</dt>
+                    <dd>评论内容:{{ com.comment }}</dd>
+                    {% endfor %}
+				</dl>
+			</div>
+
+		</div>
+	</div>
+{% endblock main_wrap %}
+
+{% block bottomfiles %}
+<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+	<script type="text/javascript">
+
+		// 获取add_cart div元素左上角的坐标
+		var $add_x = $('#add_cart').offset().top;
+		var $add_y = $('#add_cart').offset().left;
+
+        // 获取show_count div元素左上角的坐标
+		var $to_x = $('#show_count').offset().top;
+		var $to_y = $('#show_count').offset().left;
+
+
+		$('#add_cart').click(function(){
+            // 获取商品id和商品数量
+            var goods_id = $(this).attr('goods_id'); // attr prop
+            var count = $('.num_show').val();
+            var csrf = $('input[name="csrfmiddlewaretoken"]').val();
+            // 组织参数
+            var params = {'goods_id':goods_id, 'count':count, 'csrfmiddlewaretoken':csrf};
+            // 发起ajax post请求，访问/cart/add, 传递参数:sku_id count
+            $.post('/cart/add/', params, function (data) {
+                if (data.res == 5){
+                    // 添加成功
+                    $(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
+                    $(".add_jump").stop().animate({
+                        'left': $to_y+7,
+                        'top': $to_x+7},
+                        "fast", function() {
+                            $(".add_jump").fadeOut('fast',function(){
+                                // 重新设置用户购物车中商品的条目数
+                                $('#show_count').html(data.total_count);
+                            });
+			        });
+                }
+                else{
+                    // 添加失败
+                    alert(data.errmsg)
+                }
+            })
+		})
+	</script>
+
+    <script type="text/javascript">
+
+        updata_goods_price();
+
+        function updata_goods_price() {
+            // 计算总价
+            // 1. 获取价格，获取数目
+            // 2. 处理获取到的数据
+            // 3. 计算结果并显示
+            var count, number, total;
+            count = $('.show_pirze').children('em').text();
+            number = $('.num_show').val();
+
+            count = parseFloat(count);
+            number = parseFloat(number);
+
+            total = count * number;
+
+            $('.total').children('em').text(total.toFixed(2) + '元');
+
+        }
+
+        // 增加商品数量
+        $('.add').click(function () {
+            var count = $('.num_show').val();
+            count = parseInt(count) + 1;
+
+            $('.num_show').val(count);
+
+            updata_goods_price();
+
+        });
+
+        // 减少商品数量
+        $('.minus').click(function () {
+            var count = $('.num_show').val();
+
+            if (parseInt(count) <= 1){
+                count = 1
+            }
+            else{
+                count = parseInt(count) - 1;
+            }
+
+            $('.num_show').val(count);
+
+            updata_goods_price();
+        });
+
+        // 手动输入商品数量
+        $('.num_show').blur(function () {
+            // 1. 获取用户输入的数据
+            // 2. 判断数据是否合法
+            // 3. 重新设置商品的数目，并更新商品的总价
+            var count = $(this).val();
+
+            if (isNaN(count) || count.trim().length == 0 || parseInt(count) <= 0){
+                count = 1;
+            }
+            $(this).val(parseInt(count));
+            updata_goods_price();
+        });
+
+        // 商品详情和评论点击切换
+        $('#tag_detail').click(function () {
+            $('#tag_comment').removeClass('active');
+            $(this).addClass('active');
+            $('#tab_detail').show();
+            $('#tab_comment').hide();
+        });
+        $('#tag_comment').click(function () {
+            $('#tag_detail').removeClass('active');
+            $(this).addClass('active');
+            $('#tab_comment').show();
+            $('#tab_detail').hide();
+        });
+
+
+    </script>
+{% endblock bottomfiles %}

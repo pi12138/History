@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>查询已借阅书籍</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+    <div class="container">
+        <h4 class="page-header">你好！<a href="/" title="点击回到主页">{{ user_name }}</a></h4>
+
+        <ul class="list-group">
+            <div class="col-md-4">
+                <li class="list-group-item"><a href="/user/inquire/">查询已借阅书籍</a></li>
+                <li class="list-group-item"><a href="/user/books_list/">图书列表</a></li>
+                <li class="list-group-item"><a href="/user/not_returned_books">未归还书籍</a></li>
+                <li class="list-group-item"><a href="/user/alter_user_info/">账户信息修改</a></li>
+                <li class="list-group-item"><a href="/user/delete_user_info/">账号注销</a></li>
+            </div>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="col-md-8">
+        {% if book_num %}
+            <h5 class="page-header">你一共借阅了 {{ book_num }} 本书！</h5>
+            {% if not_return %}
+                <h5 class="page-header">还有 {{ not_return }} 本书未归还，请尽快归还！</h5>
+            {% else %}
+                <h5 class="page-header">你没有未归还书籍！</h5>
+            {% endif %}
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ISBN</th>
+                        <th>书籍名称</th>
+                        <th>书籍作者</th>
+                        <th>借阅时间</th>
+                        <th>归还时间</th>
+                        <th>是否归还</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in book_list %}
+                        <tr>
+                            <td>{{ book.ISBN }}</td>
+                            <td>{{ book.book_name }}</td>
+                            <td>{{ book.book_author }}</td>
+                            <td>{{ book.borrowing_time }}</td>
+                            <td>{{ book.return_time }}</td>
+                            <td>
+                                {% if book.return_time == "未归还" %}
+                                    <form method="post" action="/user/returning_books/">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="ISBN" value="{{ book.ISBN }} ">
+                                        <input type="submit" value="归还">
+                                    </form>
+                                {% else %}
+                                    已归还
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>

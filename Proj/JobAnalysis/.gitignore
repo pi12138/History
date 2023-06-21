@@ -1,0 +1,14 @@
+.idea*
+
+**/**/*.pyc
+
+local_settings.py
+
+.idea/**
+
+*.log
+
+data/**
+
+.ipynb_checkpoints
+*.ipynb

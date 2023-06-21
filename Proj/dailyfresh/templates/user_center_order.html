@@ -1,0 +1,108 @@
+{% extends 'base_user_center.html' %}
+
+{% block right_content %}
+    {% load static from staticfiles %}
+		<div class="right_content clearfix">
+				<h3 class="common_title2">全部订单</h3>
+            {% csrf_token %}
+            {% for order in order_list %}
+				<ul class="order_list_th w978 clearfix">
+					<li class="col01">{{ order.create_time }}</li>
+					<li class="col02">订单号：{{ order.order_id }}</li>
+					<li class="col02 stress">{{ order.status }}</li>
+				</ul>
+
+				<table class="order_list_table w980">
+					<tbody>
+						<tr>
+							<td width="55%">
+                                {% for order_goods in order.order_goods_list %}
+								<ul class="order_goods_list clearfix">					
+									<li class="col01"><img src="{{ order_goods.sku.image.url }}"></li>
+									<li class="col02">{{ order_goods.sku.name }}<em>{{ order_goods.sku.price }}元/{{ order_goods.sku.unite }}</em></li>
+									<li class="col03">{{ order_goods.count }}</li>
+									<li class="col04">{{ order_goods.amount }}元</li>
+								</ul>
+                                {% endfor %}
+							</td>
+							<td width="15%">{{ order.total_price }}元(含运费)</td>
+							<td width="15%">{{ order.status }}</td>
+                            <td width="15%"><a href="#" status="{{ order.order_status }}" order_id="{{ order.order_id }}" class="oper_btn">去付款</a></td>
+						</tr>
+					</tbody>
+				</table>
+            {% endfor %}
+
+
+				<div class="pagenation">
+                {% if order_list.has_previous %}
+					<a href="{% url 'user:order' order_list.previous_page_number %}">&lt;上一页</a>
+                {% endif %}
+                    {% for p in pages %}
+                        {% if p == order_list.number %}
+    					<a href="{% url 'user:order' p %}" class="active">{{ p }}</a>
+	    				{% else %}
+                        <a href="{% url 'user:order' p %}">{{ p }}</a>
+                        {% endif %}
+                    {% endfor %}
+                {% if order_list.has_next %}
+					<a href="{% url 'user:order' order_list.next_page_number %}">下一页&gt;</a>
+				{% endif %}
+                </div>
+		</div>
+{% endblock %}
+
+{% block bottomfiles %}
+    <script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+    <script type="text/javascript">
+        $('.oper_btn').click(function () {
+            var status_code = $(this).attr('status');
+            // 获取订单ID
+            var order_id = $(this).attr('order_id');
+
+            if (status_code == '1'){
+                // 待支付 状态
+                var csrf = $('input[name="csrfmiddlewaretoken"]').val();
+                var params = {'order_id': order_id, 'csrfmiddlewaretoken': csrf};
+                $.post('/order/pay/', params, function (data) {
+                    if (data.res == 3){
+                        // 跳转到支付页面
+                        window.open(data.pay_url);
+                        // 浏览器访问/order/check/,获取支付交易结果
+                        $.post('/order/check/', params, function (data) {
+                            if (data.res == 4){
+                                // 支付成功，刷新页面
+                                alert(data.message);
+                                location.reload();
+                            }
+                            else{
+                                alert(data.errmsg);
+                            }
+                        })
+                    }
+                    else{
+                        alert(data.errmsg);
+                    }
+                });
+            }
+            else if (status_code == '4'){
+                // 跳转到评论页面
+                location.href = '/order/comment/' + order_id;
+            }
+        });
+
+        $('.oper_btn').each(function () {
+            var status_code = $(this).attr('status');
+
+            if (status_code == '1'){
+                $(this).text('去支付');
+            }
+            else if (status_code == '4'){
+                $(this).text('待评价');
+            }
+            else if (status_code == '5'){
+                $(this).text('已完成');
+            }
+        })
+    </script>
+{% endblock %}

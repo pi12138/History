@@ -1,0 +1,101 @@
+{% extends 'myblog/base.html' %}
+{% load static from staticfiles %}
+
+{% block title %}留言列表{% endblock title %}
+
+{% block top_box %}{% endblock top_box %}
+
+
+{% block container %}
+<div class="container">
+
+  <div class="row">
+      <div class="col-sm-1"></div>
+      <div class="col-sm-10">
+        <form role="form-inline">
+            {% csrf_token %}
+          <div class="form-group">
+            <label for="name">想对博主说些什么：</label>
+            <textarea class="form-control" rows="3" name="content"></textarea>
+          </div>
+            <div class="col-sm-7">
+              <div class="form-group">
+                <input type="email" class="form-control" name="email" placeholder="请输入你的邮箱地址方便反馈信息">
+              </div>
+            </div>
+            <div class="col-sm-1">
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="hidden" name="article_id" value="{{ article.id }}">
+                      <button type="button" class="btn btn-default" id="submit">提交留言</button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+      </div>
+      <div class="col-sm-1"></div>
+  </div>
+  <div class="row text-center" style="" id="comment_list">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-10">
+        <h2>{{ feedback_list|length }}条评论</h2>
+        <div class="list-group">
+          {% for feedback in feedback_list %}
+            <a href="javascript:void(0);" class="list-group-item">
+                <h4 class="list-group-item-heading">
+                    {{ feedback.email }}&nbsp;&nbsp;|&nbsp;&nbsp;{{ feedback.pub_date }}
+                </h4>
+                <p class="list-group-item-text">
+                    {{ feedback.content }}
+                </p>
+            </a>
+          {% empty %}
+
+          {% endfor %}
+      </div></div>
+    <div class="col-sm-1"></div>
+
+  </div>
+</div>
+{% endblock container %}
+{% block bottom_box %}{% endblock bottom_box %}
+
+{% block bottom_js %}
+<script type="text/javascript">
+    $('#submit').click(function () {
+        var email = $('input[name="email"]').val();
+        var content = $('textarea[name="content"]').val();
+        var pattern = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
+
+        if (pattern.test(email) && content !== ""){
+            var csrf = $('input[name="csrfmiddlewaretoken"]').val();
+
+            var params = {
+                'email': email,
+                'content': content,
+                'csrfmiddlewaretoken': csrf
+            }
+
+            $.post('/feedback/add/', params, function (data) {
+                if (data.res == 0){
+                    alert(data.message);
+                    window.location.reload();
+                }
+                else{
+                    alert(data.res + data.errmsg);
+                }
+            });
+        }
+        else{
+            alert('邮箱或者留言内容为存在问题！');
+            return;
+        }
+
+    });
+
+    $('#feedback').addClass('active');
+    $('#feedback').siblings('li').removeClass('active');
+
+</script>
+{% endblock bottom_js %}

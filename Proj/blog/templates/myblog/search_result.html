@@ -1,0 +1,44 @@
+{% extends 'myblog/base.html' %}
+{% load static from staticfiles %}
+{% block title %}{{ search }}的搜索结果{% endblock title %}
+
+{% block top_box %}{% endblock top_box %}
+
+
+{% block container %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-4">
+      <div style="height: 50px;"></div>
+      <div class="fakeimg">
+          <div style="float: left; margin-right: 20px;"></div>
+          <img src="{% static 'image/water.jpg' %}" style="height: 200px; float: left;" class="img-thumbnail">
+      </div>
+{#      <p>关于我的介绍..</p>#}
+
+      <h3>最近被评论过的文章</h3>
+      <ul class="nav nav-pills nav-stacked">
+          {% for comment in comments %}
+              <li><a href="{% url 'blog:show' comment.article.id %}">{{ comment.article.title }}</a></li>
+          {% endfor %}
+      </ul>
+      <hr class="hidden-sm hidden-md hidden-lg">
+    </div>
+    <div class="col-sm-8">
+        <h4><span class="label label-success">{{ search }}&nbsp;的搜索结果一共&nbsp;{{ search_result|length }}&nbsp;条</span></h4>
+        <hr>
+        {% for article in search_result %}
+
+          <h3><a href="{% url 'blog:show' article.id %}">{{ article.title }}</a></h3>
+
+          <h5><span>{{ article.category }}</span><span class="line"></span><span>{{ article.update_time }}</span></h5>
+
+        {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock container %}
+
+{% block bottom_box %}
+
+{% endblock bottom_box %}

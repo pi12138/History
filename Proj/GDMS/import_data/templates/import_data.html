@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>导入信息</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+    <!--导入学院信息，教研室信息，方向信息，专业信息，班级信息-->
+    <div class="container">
+	<div class="row clearfix">
+		<div class="col-md-4 column">
+		</div>
+		<div class="col-md-4 column" style="margin-top: 100px;">
+			<form role="form" action="{% url 'import_data:data' %}" method="POST" enctype="multipart/form-data">
+                <h3>导入学院信息</h3>
+            {% csrf_token %}
+				<div class="form-group">
+                    <label for="selectType">请选择信息类型</label><br>
+                    <select name="type" id="selectType">
+                        <option value="0" {% if type == 0 %} selected {% endif %}>学院信息</option>
+                        <option value="1" {% if type == 1 %} selected {% endif %}>专业信息</option>
+                        <option value="2" {% if type == 2 %} selected {% endif %}>方向信息</option>
+                        <option value="3" {% if type == 3 %} selected {% endif %}>班级信息</option>
+                        <option value="4" {% if type == 4 %} selected {% endif %}>教研室信息</option>
+                    </select>
+				</div>
+				<div class="form-group">
+					 <label for="exampleInputFile">文件选择</label>
+                    <input type="file" id="exampleInputFile" name="file" />
+				</div>
+                <div class="form-group">
+                    <input type="submit" value="提交" class="btn btn-default">
+                </div>
+			</form>
+		</div>
+		<div class="col-md-4 column">
+		</div>
+	</div>
+    </div>
+
+
+    <div class="container" id="prompt">
+        <div class="alert alert-danger">
+            <h2>{{ info }}</h2>
+            <h2>{{ error_info }}</h2>
+        </div>
+    </div>
+
+    <script>
+    </script>
+</body>
+</html>

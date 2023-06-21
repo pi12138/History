@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>主页</title>
+    <script src="/static/jquery-1.12.4.min.js"></script>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.css">
+    <script src="/static/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.css">
+    <script src="/static/vue-2.4.0.js"></script>
+    <script src="/static/vue-resource-1.3.4.js"></script>
+    <script src="/static/showdown.min.js"></script>
+    <style>
+        body {
+            font-family: Georgia, serif;
+        }
+        
+        #info .list-group-item {
+            border: 0px;
+        }
+        
+        [v-cloak] {
+            display: none;
+        }
+        
+        th,
+        td {
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <nav class="navbar navbar-default" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/index/">Pipipip</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/">欢迎</a></li>
+                    <li><a href="/index/">主页</a></li>
+                    <li><a href="/message_board/">留言板</a></li>
+                    <li><a href="/archive/">归档</a></li>
+
+                    <li><a href="/user_statistics/">访问统计</a></li>
+
+                </ul>
+                <form class="navbar-form navbar-right" role="search" id="search_bar" action="/search/" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" name="keyword" class="form-control" placeholder="输入文章关键字" required {% if keyword %} value="{{ keyword }}" {% endif %}>
+                    </div>
+                    <button type="submit" class="btn btn-default" v-on="searchArticle">搜索</button>
+                </form>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+        <input type="hidden" name="article_id" value="{{ pk }}">
+
+        <div class="row clearfix">
+            {% verbatim %}
+            <div class="col-md-4 column" id="article_list">
+                <!-- 隐藏标签，为了保存文章数据url -->
+                <div class="list-group">
+                    <a href="#" class="list-group-item disabled">最新文章</a>
+                    <a v-bind:href="'/article/'+ art.id + '/'" class="list-group-item" v-for="art in latest_article_list" v-cloak>
+                        <span class="badge">{{ art.read_number }}</span> {{ art.title }}
+                    </a>
+                </div>
+                <div class="list-group">
+                    <a href="#" class="list-group-item disabled">热门文章</a>
+                    <a v-bind:href="'/article/' + art.id + '/'" class="list-group-item" v-for="art in hot_article_list" v-cloak>
+                        <span class="badge">{{ art.read_number }}</span> {{ art.title }}
+                    </a>
+                </div>
+                <div class="list-group">
+                    <a href="#" class="list-group-item disabled">相似的文章</a>
+                    <a v-bind:href="'/article/' + art.id + '/'" class="list-group-item" v-for="art in similar_article_list" v-cloak>
+                        <span class="badge">{{ art.read_number }}</span> {{ art.title }}
+                    </a>
+                </div>
+            </div>
+            {% endverbatim %}
+
+            <div class="col-md-8 column" id="article_info">
+                <!-- 文章标题栏 -->
+                <div class="page-header">
+                    <h1 v-text="article.title">Example page header</h1>
+                    <span class="label label-default" v-text="article.category_name">Label</span>
+                    <span class="label label-default" v-text="article.update_time">Label</span>
+                    <span class="label label-default" v-text="'阅读数：' + article.article_read_number">Label</span>
+                </div>
+
+                <!-- 文章内容 -->
+                <div class="view">
+                    <p contenteditable="false" v-html="content"></p>
+                </div>
+                <br>
+                <!-- 评论栏 -->
+
+                <form action="/api/comment/comments/" method="POST" role="form" onsubmit="return false">
+                    {% csrf_token %}
+                    <input type="hidden" name="article" value="{{ pk }}">
+                    <textarea name="content" id="input" class="form-control" rows="3" required="required" placeholder="留下你的看法" v-model="comment">{{ comment }}</textarea>
+                    <br>
+                    <div class="col-sm-8">
+                        <input type="email" name="email" class="form-control col-sm-6" v-model="email" value="email" required="required" title="留下你的邮箱" placeholder="留下你的邮箱">
+                    </div>
+                    <div class="col-sm-1"></div>
+                    <button type="submit" class="btn btn-primary" v-on:click.self="submitComment">发送</button>
+                    <button type="button" class="btn btn-default" v-on:dblclick.self="clearContent">双击清空</button>
+                </form>
+
+                <br>
+                <br> {% verbatim %}
+                <div class="list-group">
+                    <a href="#" class="list-group-item disabled"><span class="badge" v-text="article.article_comment_number">14</span>评论列表</a>
+                    <div class="list-group-item" v-for="comment in comment_list">
+                        <h5 class="list-group-item-heading">{{ comment.email }} &nbsp;&nbsp;&nbsp;{{ comment.pub_date }}</h5>
+                        <p class="list-group-item-text" v-text="comment.content"></p>
+                    </div>
+                </div>
+                {% endverbatim %}
+
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var article_info = new Vue({
+            el: "#article_info",
+            data: {
+                content: "",
+                article: {},
+                comment_list: [],
+                email: "",
+                comment: ""
+            },
+            methods: {
+                getArticleInfo() { // 获取文章信息
+                    var pk = $("input[name='article_id']").val();
+                    var url = "/api/blogv2/articles/" + pk + "/";
+                    // console.log(url);
+                    this.$http.get(url).then(response => {
+                        this.article = response.body;
+                        // console.log(this.article)
+
+                        document.title = this.article.title;
+                        var content = this.article.content;
+                        var converter = new showdown.Converter({
+                            tables: true
+                        });
+
+                        this.content = converter.makeHtml(content);
+                        // this.comment_list = this.article.comment;
+                    })
+                },
+
+                getCommentInfo() { // 获取文章留言信息
+                    var url = '/api/comment/comments/get_comments_from_article/';
+                    var params = {
+                        'article_id': $("input[name='article_id']").val()
+                    };
+                    this.$http.get(url, {
+                        params: params
+                    }).then(response => {
+                        this.comment_list = response.body;
+                    }, error => {
+                        console.log("获取留言列表失败！");
+                    });
+
+                },
+
+                submitComment() { // 提交留言
+                    var csrf = $("input[name='csrfmiddlewaretoken']");
+
+                    // 简单数据校验
+                    if (this.email === "" | this.email.search("@") == -1) {
+                        alert("请输入正确邮箱地址。");
+                        return
+                    }
+
+                    var params = {
+                        'csrfmiddlewaretoken': csrf,
+                        'email': this.email,
+                        'content': this.comment,
+                        'article': this.article.id
+                    };
+                    this.$http.post('/api/comment/comments/', params).then(response => {
+                        this.getCommentInfo();
+                        this.getArticleInfo();
+                        alert("留言成功！")
+                    }, error => {
+                        alert("留言失败！")
+                    });
+                },
+
+                clearContent() { // 清空留言栏
+                    this.comment = "";
+                }
+
+            },
+            created() {
+                this.getArticleInfo();
+                this.getCommentInfo();
+            },
+        })
+
+        var article_list = new Vue({
+            el: "#article_list",
+            data: {
+                latest_article_list: [],
+                hot_article_list: [],
+                similar_article_list: []
+            },
+            methods: {
+                getLatestArticle() { // 获取最新的文章
+                    var url = "/api/blogv2/articles/latest_article/";
+
+                    this.$http.get(url).then(response => {
+                        this.latest_article_list = response.body;
+                    }, error => {
+                        console.log("获取最新的文章出错！");
+                    })
+                },
+
+                getHotArticle() { // 获取最热门（阅读数）的文章
+                    var url = '/api/blogv2/articles/hot_article/';
+
+                    this.$http.get(url).then(response => {
+                        this.hot_article_list = response.body;
+                    }, error => {
+                        console.log("获取最热门文章出错！");
+                    })
+                },
+
+                getSimilarArticle() { // 获取相似的文章
+                    var url = '/api/blogv2/articles/similar_article/';
+                    var params = {
+                        'article_id': $("input[name='article_id']").val()
+                    }
+                    this.$http.get(url, {
+                        params: params
+                    }).then(response => {
+                        this.similar_article_list = response.body;
+                    }, error => {
+                        console.log("获取相似的文章失败！");
+                    })
+                }
+            },
+            created() {
+                this.getLatestArticle();
+                this.getHotArticle();
+                this.getSimilarArticle();
+            }
+
+        })
+    </script>
+</body>
+
+</html>

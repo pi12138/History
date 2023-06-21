@@ -1,0 +1,223 @@
+{% load extra_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>审核课题 | 管理员</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/approval_subject.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">毕业设计管理系统</a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="/subject/approval_subject/">审核课题</a></li>
+                    <li><a href="/subject/passed_subject/">已通过课题</a></li>
+                    <li><a href="/process/admin/">毕业设计过程</a></li>
+                    <li><a href="/announcement/admin/">公告</a></li>
+                    <li><a href="/message_board/admin/">师生留言</a></li>
+                    <li><a href="/user/administrator_settings/">个人主页</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/logout/">退出</a></li>
+                </ul>
+                <div class="navbar-right">
+
+                    <p class="navbar-text">{{ user|get_username }}</p>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- 待审核课题列表 -->
+    <div class="container" id="pendingList">
+        <div class="page-header">
+            <h1>审核课题
+                <small>待审核课题列表</small>
+            </h1>
+        </div>
+
+        <!-- 待审核课题列表 -->
+        <div class="subjects_table">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>课题编号</th>
+                  <th>课题名称</th>
+                  <th>人数</th>
+                  <th>申请人</th>
+                  <th>申报时间</th>
+                  <th>审核状态</th>
+                </tr>
+              </thead>
+              <tbody>
+
+              <tr v-for="(pending, index) in pendingList" :key="pending.id">
+                  <td v-text="pending.id"></td>
+                  <td><a href="#" v-text="pending.subject_name" @click="getSubjectInfo(index)"></a></td>
+                  <td v-text="pending.number_of_people"></td>
+                  <td v-text="pending.teacher_name"></td>
+                  <td v-text="pending.declare_time"></td>
+                  <td v-text="pending.review_result"></td>
+              </tr>
+
+              </tbody>
+            </table>
+
+            <!-- 分页 -->
+            <div class="row">
+                <div class="col-md-10 text-info" style="height: 78px;line-height: 78px;" v-text="'一共'+count+'条记录， 当前'+page+'/'+numPages+'页'">
+                </div>
+
+                 <nav class="pull-right col-md-2">
+                      <ul class="pagination">
+                        <li class="" ref="previousBtn">
+                            <a @click.prevent="getPendingList(previousUrl)">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="active">
+                            <a href="#" v-text="page"></a>
+                        </li>
+                        <li class="" ref="nextBtn">
+                            <a @click.prevent="getPendingList(nextUrl)">
+                                <span class="aria-hidden">&raquo;</span>
+                            </a>
+                        </li>
+                      </ul>
+                    </nav>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 遮罩层 -->
+    <!-- 审批申报表 -->
+    <div class="container hidden" id="markForm" ref="markForm">
+        <div class="form" role="form">
+                <div class="row">
+                    <h3 class="text-center">审批申报表</h3>
+                    <hr>
+                </div>
+                </div>
+                <div class="row">
+                <div class="form-group col-md-12">
+                    <label for="subject_name" class="">课题名称</label>
+                    <input type="text" class="form-control" placeholder="请输入课题名称" v-model="formData.subject_name" required>
+                </div>
+                </div>
+
+                <div class="row">
+                <div class="form-group col-md-6">
+                    <label for="teacher" class="">出题教师</label>
+                    <div class="form-control" v-text="formData.teacher_name"></div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="office">教研室</label>
+                    <div class="form-control" v-text="formData.office_name"></div>
+                </div>
+                </div>
+
+                <div class="row">
+                <div class="form-group col-md-6">
+                    <label for="number_of_people" class="">课题人数</label>
+                    <input type="number" class="form-control" id="number_of_people" placeholder="课题人数" v-model="formData.number_of_people" required>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="student">已选学生</label>
+                    <div class="form-control" v-text="formData.student_name"></div>
+                </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">课题简述</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写课题简述" v-model="formData.subject_description" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">预期目标</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写预期目标" v-model="formData.expected_goal" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">对学生知识和能力的要求</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写对学生知识和能力的要求" v-model="formData.require" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">所需条件</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写所需条件" v-model="formData.required_conditions" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">参考资料</label>
+                        <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="请填写参考资料" v-model="formData.references" required></textarea>
+                    </div>
+                </div>
+        
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="">审核人</label>
+                        <input type="text" value="{{ user|get_username }}" class="form-control" ref="reviewer" disabled>
+                        <input type="hidden" value="{{ user.id }}" ref="reviewerId">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="">审核结果</label>
+                        <select name="review_result" id="" class="form-control" v-model="formData.review_result_number">
+                            <option value="0">待审核</option>
+                            <option value="1">审核通过</option>
+                            <option value="2">审核未通过</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="">未通过原因</label>
+                        <textarea cols="30" rows="5" v-model="formData.review_reason" class="form-control" placeholder="如果未通过请填写原因"></textarea>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="form-group col-md-3">
+                        <button class="form-control btn btn-primary" title="提交审批结果" ref="submitBtn" @click="submitForm(formData.id)">提交审批结果</button>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <button class="form-control btn btn-default" title="关闭当前申报表" @click="closeForm">关闭当前</button>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+
+    <script src="/static/js/vue.js"></script>
+    <script src="/static/js/axios.min.js"></script>
+    <script src="/static/js/approval_subject.js"></script>
+</body>
+
+</html>

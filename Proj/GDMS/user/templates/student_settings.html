@@ -1,0 +1,316 @@
+{% load extra_filters %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人主页</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">毕业设计管理系统</a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li><a href="/subject/select_subject/">选择课题</a></li>
+                    <li><a href="/process/student/">毕业设计过程</a></li>
+                    <li><a href="/announcement/student/">公告</a></li>
+                    <li><a href="/message_board/student/">师生交流</a></li>
+                    <li class="active"><a href="/user/student_settings/">个人主页</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/logout/">退出</a></li>
+                </ul>
+                <div class="navbar-right">
+                    <p class="navbar-text">{{ user | get_username }}</p>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+    <div class="container" id="app">
+        <div class="page-header">
+            <h3>个人设置 <small>基本信息</small></h3>
+        </div>
+
+        <form class="form-inline" role="form" action="/user/student_settings/" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="" for="username">学号</label>
+                <input type="text" id="username" class="form-control" readonly="readonly" value="{{ student.username }}" name="username">
+            </div>
+            <div class="form-group" style="width: 100px;"></div>
+            <div class="form-group">
+                <label class="" for="name">姓名</label>
+                <input type="text" id="name" class="form-control" placeholder="请输入姓名" value="{{ student.name }}" name="name" required>
+            </div>
+            <div style="height: 10px;"></div>
+            <div class="form-group">
+                <label class="" for="phone">手机</label>
+                <input type="text" id="phone" class="form-control" placeholder="请输入手机号" value="{{ student.phone }}" name="phone" required>
+            </div>
+            <div class="form-group" style="width: 100px;"></div>
+            <div class="form-group">
+                <label class="" for="gender">性别</label>
+                <select name="gender" id="gender" class="form-control">
+                    <option value="0" {% if student.gender == "0" %} selected {% endif %}>男</option>
+                    <option value="1" {% if student.gender == "1" %} selected {% endif %}>女</option>
+                </select>
+            </div>
+            <div style="height: 10px;"></div>
+            <div class="form-group">
+                <label class="" for="qq" style="width: 28px;">QQ </label>
+                <input type="text" id="qq" class="form-control" placeholder="请输入QQ号" value="{{ student.qq }}" name="qq" required>
+            </div>
+            <div class="form-group" style="width: 100px;"></div>
+            <div class="form-group">
+                <label class="" for="email">邮箱</label>
+                <input type="text" id="email" class="form-control" placeholder="请输入邮箱" value="{{ student.email }}" name="email" required>
+            </div>
+            <div style="height: 10px;"></div>
+            <div class="form-group">
+                <label class="" for="faculty">院系</label>
+                <!-- <input type="text" id="faculty" class="form-control" placeholder="请输入名称" value="{{ student.faculty }}"> -->
+                <select name="faculty" id="faculty" class="form-control" v-model="faculty_id">
+                    <option v-for="faculty in facultyList" v-bind:value="faculty.id" v-text="faculty.name"></option>
+                </select>
+            </div>
+            <div style="height: 10px;"></div>
+            <div class="form-group">
+                <label class="" for="profession">专业</label>
+                <!-- <input type="text" id="profession" class="form-control" placeholder="请输入名称" value="{{ student.profession }}"> -->
+                <select name="profession" id="profession" class="form-control" v-model="profession_id">
+                    <option v-for="profess in professionList" v-bind:value="profess.id" v-text="profess.name"></option>
+                </select>
+            </div>
+            <div style="height: 10px;"></div>
+            <div class="form-group">
+                <label class="" for="direction">方向</label>
+                <!-- <input type="text" id="direction" class="form-control" placeholder="请输入名称" value="{{ student.direction }}"> -->
+                <select name="direction" id="direction" class="form-control" v-model="direction_id">
+                    <option v-for="direction in directionList" v-bind:value="direction.id" v-text="direction.name"></option>
+                </select>
+            </div>
+            <div style="height: 10px;"></div>
+            <div class="form-group">
+                <label class="" for="klass">班级</label>
+                <!-- <input type="text" id="klass" class="form-control" placeholder="请输入名称" value="{{ student.klass }}"> -->
+                <select name="klass" id="klass" class="form-control" v-model="klass_id">
+                    <option v-for="klass in klassList" v-bind:value="klass.id" v-text="klass.name"></option>
+                </select>
+            </div>
+            <div style="height: 10px;"></div>
+            <div class="form-group">
+                <input type="submit" value="修改" class="form-control btn btn-primary">
+            </div>
+        </form>
+
+        <div class="page-header">
+            <h3>个人设置 <small>其他设置</small></h3>
+        </div>
+        <div style="margin-bottom: 10px;"><button class="btn btn-default" @click="is_show=true">修改密码</button></div>
+        <div v-show="is_show" id="change_password_div">
+            <form action="" class="form-inline" onsubmit="return false">
+                <div class="form-group">
+                    <label for="">原密码</label>
+                    <input type="text" class="form-control" name="old_password" placeholder="请输入原密码" v-model="oldPassword">
+                </div>
+                <div class="form-group">
+                    <label for="">新密码</label>
+                    <input type="password" class="form-control" name="new_password1" placeholder="请输入新密码" v-model="newPassword1">
+                </div>
+                <div class="form-group">
+                    <label for="">确认密码</label>
+                    <input type="password" class="form-control" name="new_password2" placeholder="请输入新密码" v-model="newPassword2">
+                </div>
+                <div class="form-group">
+                    <input type="button" class="form-control" value="确认" @click="changePassword">
+                    <input type="button" value="取消" class="form-control" @click="canelChange">
+                </div>
+            </form>
+        </div>
+        
+
+        <div class="hidden_data">
+            <!-- 隐藏数据 -->
+            <input type="hidden" value="{{ student.faculty }}" id="faculty_id">
+            <input type="hidden" value="{{ student.profession }}" id="profession_id">
+            <input type="hidden" value="{{ student.direction }}" id="direction_id">
+            <input type="hidden" value="{{ student.klass }}" id="klass_id">
+        </div>
+        
+        
+            {% if error_msg %}
+            <div class="alert alert-danger" style="margin-top: 10px;">{{ error_msg }}</div>
+            {% endif %}
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                facultyList: [{id:0, name:"请选择学院"}],
+                professionList: [{id: 0, name: "请选择专业"}],
+                directionList: [{id: 0, name: "请选择方向"}],
+                klassList: [{id:0, name: "请选择班级"}],
+                baseUrl: "http://127.0.0.1:8000/organization/",
+                faculty_id: 0,
+                profession_id: 0,
+                direction_id: 0,
+                klass_id: 0,
+                is_show: false,
+                oldPassword: "",
+                newPassword1: "",
+                newPassword2: ""
+            },
+            methods: {
+                get_faculty(){
+                    /* 获取所有的学院 */
+
+                    var url = this.baseUrl + "facultys/"
+                    axios.get(url)
+                    .then(function(res){
+                        console.log(res);
+                        res.data.unshift(app.facultyList[0])
+                        app.facultyList = res.data
+                        return this.facultyList
+                    })
+                    .catch(function(error) {
+                        console.log(error)
+                    })
+                },
+
+                get_profession(faculty_id){
+                    /* 获取指定学院的所有专业
+                        faculty_id: 学院id
+                     */
+                    var url = this.baseUrl + "professions/" + "?faculty_id=" + faculty_id
+                    axios.get(url)
+                    .then(function(res){
+                        console.log(res)
+                        res.data.unshift(app.professionList[0])
+                        app.professionList = res.data
+                    })
+                    .catch(function(error){
+                        console.log(error)
+                    })
+                },
+
+                get_direction(profession_id){
+                    /* 获取对应专业的所有方向
+                        profession_id: 专业id
+                     */
+                    var url = this.baseUrl + "directions/" + "?profession_id=" + profession_id
+                    axios.get(url)
+                    .then(function(res){
+                        console.log(res)
+                        res.data.unshift(app.directionList[0])
+                        app.directionList = res.data
+                    })
+                },
+
+                get_klass(direction_id){
+                    /* 获取指定方向的所有班级
+                        direction_id: 方向id
+                     */
+                    var url = this.baseUrl + "klasses/" + "?direction_id=" + direction_id
+                    axios.get(url)
+                    .then(function(res){
+                        console.log(res)
+                        res.data.unshift(app.klassList[0])
+                        app.klassList = res.data
+                    })
+                },
+
+                get_need_data(){
+                    /* 获取一些需要使用的数据 */
+                    this.faculty_id = parseInt(document.getElementById('faculty_id').value)
+                    this.profession_id = parseInt(document.getElementById('profession_id').value)
+                    this.direction_id = parseInt(document.getElementById('direction_id').value)
+                    this.klass_id = parseInt(document.getElementById('klass_id').value)
+                },
+
+                canelChange(){
+                    /* 取消修改密码 */
+                    this.oldPassword = ""
+                    this.newPassword1 = ""
+                    this.newPassword2 = ""
+                    this.is_show = false
+                },
+                changePassword(){
+                    if (!this.oldPassword){
+                        alert("请填写原密码")
+                        return 
+                    }
+
+                    if (!this.newPassword1){
+                        alert("请填写新密码")
+                        return
+                    }
+
+                    if (this.newPassword1 !== this.newPassword2){
+                        alert("新密码不一样")
+                        return
+                    }
+
+                    if (this.newPassword1 === this.oldPassword){
+                        alert("新旧密码一样")
+                        return
+                    }
+                    
+                    var url = "http://127.0.0.1:8000/user/change_password/"
+                    var params = {
+                        old_password: this.oldPassword,
+                        new_password1: this.newPassword1,
+                        new_password2: this.newPassword2,
+                    }
+                    
+                    axios.post(url, params)
+                    .then(function(res){
+                        alert(res.data + "请重新登录")
+                        window.location.href = "/"
+                    })
+                    .catch(function(error){
+                        alert(error.response.data)
+                    })
+                }
+
+            },
+            watch: {
+                /* 监视data中数据的改变触发相应事件 */
+                faculty_id(newVal, oldVal){
+                    this.get_profession(newVal)
+                },
+                profession_id(newVal, oldVal){
+                    this.get_direction(newVal)
+                },
+                direction_id(newVal, oldVal){
+                    this.get_klass(newVal)
+                }
+            },
+            mounted() {
+                /* 实例挂载后调用指定方法获取数据 */
+                this.get_faculty()
+                this.get_need_data()
+            },
+            
+        })
+    </script>
+</body>
+    
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>使用指南</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <style type="text/css">
+        .guide_user, .guide_visitor{
+            display:none;
+        }
+
+        #guide_contents div.guide{
+            display: block;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $(function(){
+            $(".panel-body button").click(function () {
+                $("#guide_contents div").eq($(this).index()).addClass("guide").siblings().removeClass("guide");
+            })
+
+        });
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-header"><a href="/">图书管理系统</a> <small>使用指南</small></h1>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">本指南分为两种，请根据自己的身份，来判断你需要使用哪一种！</h3>
+                </div>
+                <div class="panel-body">
+                    <button class="btn btn-default col-md-6" id="button_01">已有账户！</button>
+                    <button class="btn btn-default col-md-6" id="button_02">未有账户！</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="guide_contents">
+        <div class="guide_user" id="guide_user">
+            <h3>1. 在系统主页点击登录按钮。</h3>
+            <h3>2. 输入已经注册过的账号进行登录。</h3>
+            <h3>3. 登录成功后点击个人主页按钮进入个人主页。</h3>
+            <h3>4. 在个人主页中，可以查看图书列表，已借阅书籍列表，未归还书籍列表。</h3>
+            <h3>5. 可以在图书列表中借阅书籍。</h3>
+            <h3>6. 在未归还书籍列表中可以查看自己未归还的书籍并进行归还操作。</h3>
+            <h3>7. 在已借阅书籍列表中，可以查看自己的图书借阅记录。</h3>
+        </div>
+
+        <div class="guide_visitor" id="guide_visitor" >
+            <h3>1. 在系统主页点击注册按钮。</h3>
+            <h3>2. 按照要求进行注册。</h3>
+            <h3>3. 注册成功后进行登录</h3>
+            <h3>4. 登录成功后点击个人主页按钮进入个人主页。</h3>
+            <h3>5. 在个人主页中点击图书列表，可以对藏书进行查看。</h3>
+            <h3>6. 选择自己需要的图书点击借阅按钮即可对图书进行借阅。</h3>
+        </div>
+
+
+    </div>
+
+
+</body>
+</html>

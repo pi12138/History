@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+{% load static from staticfiles %}
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>天天生鲜-提交订单</title>
+	 <link rel="stylesheet" type="text/css" href="{% static 'css/reset.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+</head>
+<body>
+	<div class="header_con">
+		<div class="header">
+			<div class="welcome fl">欢迎来到天天生鲜!</div>
+			<div class="fr">
+                {% if user.is_authenticated %}
+				<div class="login_btn fl">
+					欢迎您：<em>{{ user.username }}</em>
+                    <span>|</span>
+					<a href="{% url 'user:logout' %}">退出</a>
+				</div>
+                {% else %}
+				<div class="login_btn fl">
+					<a href="{% url 'user:login' %}">登录</a>
+					<span>|</span>
+					<a href="{% url 'user:register' %}">注册</a>
+				</div>
+                {% endif %}
+				<div class="user_link fl">
+					<span>|</span>
+					<a href="{% url 'user:user' %}">用户中心</a>
+					<span>|</span>
+					<a href="{% url 'cart:show' %}">我的购物车</a>
+					<span>|</span>
+					<a href="{% url 'user:order' 1 %}">我的订单</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="search_bar clearfix">
+		<a href="{% url 'goods:index' %}" class="logo fl"><img src="{% static 'images/logo.png' %}"></a>
+		<div class="sub_page_name fl">|&nbsp;&nbsp;&nbsp;&nbsp;提交订单</div>
+		<div class="search_con fr">
+			<form action="/search" method="get">
+			    <input type="text" class="input_text fl" name="q" placeholder="搜索商品">
+			    <input type="submit" class="input_btn fr" name="" value="搜索">
+            </form>
+		</div>		
+	</div>
+	
+	<h3 class="common_title">确认收货地址</h3>
+
+	<div class="common_list_con clearfix">
+
+        <dl>
+			<dt>寄送到：</dt>
+            {% for addr in address %}
+			<dd><input type="radio" name="add_id" value="{{ addr.id }}" {% if addr.is_default == 1 %}checked{% endif %}>{{ addr.addr }} （{{ addr.receiver }} 收） {{ addr.phone }}</dd>
+            {% endfor %}
+		</dl>
+		<a href="{% url 'user:site' %}" class="edit_site">编辑收货地址</a>
+
+	</div>
+	
+	<h3 class="common_title">支付方式</h3>	
+	<div class="common_list_con clearfix">
+		<div class="pay_style_con clearfix">
+			<input type="radio" name="pay_style" value="1" checked>
+			<label class="cash">货到付款</label>
+			<input type="radio" name="pay_style" value="2">
+			<label class="weixin">微信支付</label>
+			<input type="radio" name="pay_style" value="3">
+			<label class="zhifubao"></label>
+			<input type="radio" name="pay_style" value="4">
+			<label class="bank">银行卡支付</label>
+		</div>
+	</div>
+
+	<h3 class="common_title">商品列表</h3>
+	
+	<div class="common_list_con clearfix">
+		<ul class="goods_list_th clearfix">
+			<li class="col01">商品名称</li>
+			<li class="col02">商品单位</li>
+			<li class="col03">商品价格</li>
+			<li class="col04">数量</li>
+			<li class="col05">小计</li>		
+		</ul>
+        {% for goods in goods_list %}
+            <ul class="goods_list_td clearfix">
+			<li class="col01">{{ forloop.counter }}</li>
+			<li class="col02"><img src="{{ goods.image.url }}"></li>
+			<li class="col03">{{ goods.name }}</li>
+			<li class="col04">{{ goods.unite }}</li>
+			<li class="col05">{{ goods.price }}元</li>
+			<li class="col06">{{ goods.count }}</li>
+			<li class="col07">{{ goods.amount }}元</li>
+		    </ul>
+        {% empty %}
+		<ul class="goods_list_td clearfix">
+			<li class="col01">1</li>			
+			<li class="col02"><img src="images/goods/goods012.jpg"></li>
+			<li class="col03">奇异果</li>
+			<li class="col04">500g</li>
+			<li class="col05">25.80元</li>
+			<li class="col06">1</li>
+			<li class="col07">25.80元</li>	
+		</ul>
+		<ul class="goods_list_td clearfix">
+			<li class="col01">2</li>			
+			<li class="col02"><img src="images/goods/goods003.jpg"></li>
+			<li class="col03">大兴大棚草莓</li>
+			<li class="col04">500g</li>
+			<li class="col05">16.80元</li>
+			<li class="col06">1</li>
+			<li class="col07">16.80元</li>	
+		</ul>
+        {% endfor %}
+	</div>
+
+	<h3 class="common_title">总金额结算</h3>
+
+	<div class="common_list_con clearfix">
+		<div class="settle_con">
+			<div class="total_goods_count">共<em>{{ total_count }}</em>件商品，总金额<b>{{ total_price }}元</b></div>
+			<div class="transit">运费：<b>{{ fare }}元</b></div>
+			<div class="total_pay">实付款：<b>{{ pay_price }}元</b></div>
+		</div>
+	</div>
+
+	<div class="order_submit clearfix">
+		<a href="javascript:;" id="order_btn" goods_id_str="{{ goods_id_str }}">提交订单</a>
+        {% csrf_token %}
+	</div>	
+
+	<div class="footer">
+		<div class="foot_link">
+			<a href="#">关于我们</a>
+			<span>|</span>
+			<a href="#">联系我们</a>
+			<span>|</span>
+			<a href="#">招聘人才</a>
+			<span>|</span>
+			<a href="#">友情链接</a>		
+		</div>
+		<p>CopyRight © 2016 北京天天生鲜信息技术有限公司 All Rights Reserved</p>
+		<p>电话：010-****888    京ICP备*******8号</p>
+	</div>
+
+	<div class="popup_con">
+		<div class="popup">
+			<p>订单提交成功！</p>
+		</div>
+		
+		<div class="mask"></div>
+	</div>
+	<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+	<script type="text/javascript">
+		$('#order_btn').click(function() {
+		    // 获取数据：收货地址，支付方式，商品ID
+            var addr_id = $("input[name='add_id']:checked").val();
+            var pay_style = $("input[name='pay_style']:checked").val();
+            var goods_id_str = $(this).attr('goods_id_str');
+            var csrf = $('input[name="csrfmiddlewaretoken"]').val();
+            var params = {
+                'addr_id': addr_id,
+                'pay_style': pay_style,
+                'goods_id_str': goods_id_str,
+                'csrfmiddlewaretoken': csrf
+            };
+
+            // 发送ajax请求
+            $.post('/order/commit/', params, function (data) {
+                if (data.res == 5){
+                    {#alert(data.message);#}
+                    localStorage.setItem('order_finish',2);
+
+                    $('.popup_con').fadeIn('fast', function() {
+
+                        setTimeout(function(){
+                            $('.popup_con').fadeOut('fast',function(){
+                                window.location.href = '/user/order/1';
+                            });
+                        },3000)
+
+			        });
+                }
+                else{
+                    alert(data.errmsg);
+                }
+
+            });
+		});
+	</script>
+</body>
+</html>

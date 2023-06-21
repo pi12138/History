@@ -1,0 +1,13 @@
+
+#reportForm {
+    z-index: 1000;
+    position: absolute;
+    top: 80px;
+
+    right: 50%;
+    transform: translateX(50%);
+
+    background-color: white;
+    border: 1px solid deepskyblue;
+    border-radius: 10px;
+}

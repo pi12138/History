@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style type="text/css">
+        a{
+            text-decoration: none;
+        }
+        body{
+            background-image: url("/static/login/background_image.jpeg");
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav class="navbar navbar-inverse">
+            <a class="navbar-brand" href="/">图书管理系统</a>
+            
+            <ul class="nav navbar-nav">
+                {% if user_name %}
+                    <li><a href="/login/" title="点击重新登录">{{ user_name }}</a></li>    
+                    <li><a href="/logout/" title="点击注销登录">注销</a></li>    
+                {% else %}
+                    <li><a href="/login/" title="点击登录">登录</a></li>
+                {% endif %}
+                <li><a href="/register/" title="点击注册">注册</a></li>
+                <li><a href="/user/user_info/" title="点击进入个人主页">个人主页</a></li>
+                <li><a href="/help/opinion_list/" title="可以在这里向系统管理员反馈意见">意见反馈</a></li>
+                <li><a href="/help/guide/" title="点击观看使用指南">使用指南</a></li>
+                <li><a href="/admin/" title="点击进入管理员登录">管理员登录</a></li>   
+            </ul>
+       
+        </nav>
+    </div>
+</body>
+</html>

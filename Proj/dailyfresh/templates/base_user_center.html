@@ -1,0 +1,59 @@
+{# 由用户中心的三个页面模板继承 #}
+{% extends 'base.html' %}
+
+{% block title %}天天生鲜-用户中心{% endblock title %}
+{% load static from staticfiles %}
+{% block body_content %}
+	<div class="header_con">
+		<div class="header">
+			<div class="welcome fl">欢迎来到天天生鲜!</div>
+			<div class="fr">
+                {% if user.is_authenticated %}
+				<div class="login_btn fl">
+					欢迎您：<em>{{ user.username }}</em>
+                    <span>|</span>
+					<a href="{% url 'user:logout' %}">注销</a>
+				</div>
+                {% else %}
+				<div class="login_btn fl">
+					<a href="{% url 'user:login' %}">登录</a>
+					<span>|</span>
+					<a href="{% url 'user:register' %}">注册</a>
+				</div>
+                {% endif %}
+				<div class="user_link fl">
+					<span>|</span>
+					<a href="{% url 'user:user' %}">用户中心</a>
+					<span>|</span>
+					<a href="{% url 'cart:show' %}">我的购物车</a>
+					<span>|</span>
+					<a href="{% url 'user:order' 1 %}">我的订单</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="search_bar clearfix">
+		<a href="{% url 'goods:index' %}" class="logo fl"><img src="{% static 'images/logo.png' %}"></a>
+		<div class="sub_page_name fl">|&nbsp;&nbsp;&nbsp;&nbsp;用户中心</div>
+		<div class="search_con fr">
+			<input type="text" class="input_text fl" name="" placeholder="搜索商品">
+			<input type="button" class="input_btn fr" name="" value="搜索">
+		</div>
+	</div>
+
+	<div class="main_con clearfix">
+		<div class="left_menu_con clearfix">
+			<h3>用户中心</h3>
+			<ul>
+				<li><a href="{% url 'user:user' %}" {% if page == "info" %}class="active"{% endif %}>· 个人信息</a></li>
+				<li><a href="{% url 'user:order' 1 %}" {% if page == "order" %}class="active"{% endif %}>· 全部订单</a></li>
+				<li><a href="{% url 'user:site' %}" {% if page == "site" %}class="active"{% endif %}>· 收货地址</a></li>
+			</ul>
+		</div>
+        {% block right_content %}
+        {% endblock right_content %}
+	</div>
+    <div style="height: 30px"></div>
+{% endblock body_content %}
+

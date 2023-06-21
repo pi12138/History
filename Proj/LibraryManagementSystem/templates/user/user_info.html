@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>个人主页</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style type="text/css">
+
+        .table01 th, .table01 td{
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        a{
+            text-decoration: none;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="container">
+        <h4 class="page-header">你好！<a href="/" title="点击回到主页">{{ user_name }}</a></h4>
+
+        <ul class="list-group">
+            <div class="col-md-4">
+                <li class="list-group-item"><a href="/user/inquire/">查询已借阅书籍</a></li>
+                <li class="list-group-item"><a href="/user/books_list/">图书列表</a></li>
+                <li class="list-group-item"><a href="/user/not_returned_books">未归还书籍</a></li>
+                <li class="list-group-item"><a href="/user/alter_user_info/">账户信息修改</a></li>
+                <li class="list-group-item"><a href="/user/delete_user_info/">账号注销</a></li>
+            </div>
+        </ul>
+    </div>
+
+    {% if borrowing_result %}
+         <div class="container">
+             <h3 class="page-header">{{ borrowing_result }}</h3>
+         </div>
+     {% endif %}
+
+    {% if returning_result %}
+        <div class="container">
+             <h3 class="page-header">{{ returning_result }}</h3>
+        </div>
+    {% endif %}
+
+</body>
+</html>

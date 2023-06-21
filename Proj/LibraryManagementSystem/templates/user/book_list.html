@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>书籍列表</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+     <div class="container" style="margin-bottom: 20px;">
+        <h4 class="page-header">你好！<a href="/" title="点击回到主页">{{ user_name }}</a></h4>
+
+        <ul class="list-group">
+            <div class="col-md-4">
+                <li class="list-group-item"><a href="/user/inquire/">查询已借阅书籍</a></li>
+                <li class="list-group-item"><a href="/user/books_list/">图书列表</a></li>
+                <li class="list-group-item"><a href="/user/not_returned_books">未归还书籍</a></li>
+                <li class="list-group-item"><a href="/user/alter_user_info/">账户信息修改</a></li>
+                <li class="list-group-item"><a href="/user/delete_user_info/">账号注销</a></li>
+            </div>
+        </ul>
+    </div>
+    <div class="container">
+        <div class="col-md-8">
+         {% if books %}
+            <form class="search_book" action="/user/search_books/" method="post">
+            {% csrf_token %}
+            <input type="text" name="book_name" placeholder="输入要搜索的书籍名">
+            <input type="submit" value="搜索">
+            </form>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>书籍编号</th>
+                        <th>书籍名称</th>
+                        <th>书籍作者</th>
+                        <th>书籍出版社</th>
+                        <th>出版日期</th>
+                        <th>在馆数量</th>
+                        <th>借阅按钮</th>
+                     </tr>
+                </thead>
+                <tbody>
+                    {% for p in page %}
+                        <tr>
+                            <td>{{ p.ISBN }}</td>
+                            <td>{{ p.book_name }}</td>
+                            <td>{{ p.book_author }}</td>
+                            <td>{{ p.book_publish }}</td>
+                            <td>{{ p.publication_date }}</td>
+                            <td>{{ p.book_num }}</td>
+                            <td>{% if p.book_num > 0 %}
+                            <form action="/user/borrowing_books/" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="borrowing_book_ISBN" value="{{ p.ISBN }}">
+                                <input type="submit" value="借阅">
+                            </form>
+                            {% else %}
+                                不可借阅
+                            {% endif %}
+                            </td>
+
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+             {% for page in page_range %}
+                <a href="/user/books_list/{{ page }}" class="btn">{{ page }}</a>
+             {% endfor %}
+        {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>

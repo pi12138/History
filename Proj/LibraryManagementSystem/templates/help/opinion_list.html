@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>意见列表</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style type="text/css">
+        textarea,input[type="submit"]{
+            font-size:20px;
+        }
+        a{
+            text-decoration:none;
+        }
+        {#.opinion_box{#}
+        {#    border:1px solid gray;#}
+        {#    margin-bottom: 3px;#}
+        {#}#}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-inverse">
+            <a class="navbar-brand" href="/">图书管理系统</a>
+
+            <ul class="nav navbar-nav">
+                {% if user_name %}
+                    <li><a href="/login/" title="点击重新登录">{{ user_name }}</a></li>
+                    <li><a href="/logout/" title="点击注销登录">注销</a></li>
+                {% else %}
+                    <li><a href="/login/" title="点击登录">登录</a></li>
+                {% endif %}
+                <li><a href="/register/" title="点击注册">注册</a></li>
+                <li><a href="/user/user_info/" title="点击进入个人主页">个人主页</a></li>
+                <li><a href="/help/opinion_list/" title="可以在这里向系统管理员反馈意见">意见反馈</a></li>
+                <li><a href="/help/guide/" title="点击观看使用指南">使用指南</a></li>
+                <li><a href="/admin/" title="点击进入管理员登录">管理员登录</a></li>
+            </ul>
+
+        </nav>
+    </div>
+
+    <div class="container">
+    <form action="/help/write_opinion/" method="post">
+        {% csrf_token %}
+        <textarea rows="10" cols="100" name="opinion_content" placeholder="在此处写下你宝贵的意见"></textarea><br>
+        <input type="hidden" name="user_name" value="{{ user_name }}">
+        <input type="submit" value="提交">
+    </form>
+
+
+    {% if save_result %}
+    <h3 class="save_result">{{ save_result }}</h3>
+    {% endif %}
+
+    <hr>
+    <h2><a href="/help/opinion_list/" title="点击刷新下面列表">意见列表</a></h2>
+{#    <ul>#}
+{#        {% for feed in feedback %}#}
+{#        <li>#}
+{#            <div class="opinion_box">#}
+{#                {{ feed.opinion_content }}<br>{{ feed.user_account }}--{{ feed.issuing_time }}#}
+{#            </div>#}
+{#        </li>#}
+{#        {% endfor %}#}
+{#    </ul>#}
+
+    <ul class="list-group">
+        {% for p in page %}
+            <li class="list-group-item">
+                <div class="opinion_box">
+                    {{ p.opinion_content }}<br>{{ p.user_account }}--{{ p.issuing_time }}
+                </div>
+            </li>
+        {% endfor %}
+        {% for page in page_range %}
+            <a href="/help/opinion_list/{{ page }}" class="btn">{{ page }}</a>
+        {% endfor %}
+    </ul>
+    </div>
+</body>
+</html>

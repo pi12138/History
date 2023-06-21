@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>导入位置信息</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+
+    <!--导入位置信息（答辩地点）-->
+    <div class="container" id="importLocationInfo">
+        <form action="{% url 'import_data:import-location-data' %}" class="form" enctype="multipart/form-data" method="POST">
+            {% csrf_token %}
+            <h3>导入位置文件</h3>
+            <div class="row">
+                <div class="form-group col-md-3">
+                    <input type="file" class="form-control" placeholder="请选择位置文件" name="file">
+                </div>
+                <div class="form-group col-md-1">
+                    <input type="submit" class="form-control" value="提交">
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+
+    <div class="container" id="prompt">
+        <div class="alert alert-danger">
+            <h2>{{ info }}</h2>
+            <h2>{{ error_info }}</h2>
+        </div>
+    </div>
+
+    <script>
+    </script>
+</body>
+</html>

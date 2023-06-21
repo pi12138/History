@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+{% load static from staticfiles %}
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>天天生鲜-商品搜索结果</title>
+	<link rel="stylesheet" type="text/css" href="{% static 'css/reset.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+</head>
+<body>
+	<div class="header_con">
+		<div class="header">
+			<div class="welcome fl">欢迎来到天天生鲜!</div>
+			<div class="fr">
+                {% if user.is_authenticated %}
+				<div class="login_btn fl">
+					欢迎您：<em>{{ user.username }}</em>
+                    <span>|</span>
+					<a href="{% url 'user:logout' %}">注销</a>
+				</div>
+                {% else %}
+				<div class="login_btn fl">
+					<a href="{% url 'user:login' %}">登录</a>
+					<span>|</span>
+					<a href="{% url 'user:register' %}">注册</a>
+				</div>
+                {% endif %}
+				<div class="user_link fl">
+					<span>|</span>
+					<a href="{% url 'user:user' %}">用户中心</a>
+					<span>|</span>
+					<a href="cart.html">我的购物车</a>
+					<span>|</span>
+					<a href="{% url 'user:order' %}">我的订单</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="search_bar clearfix">
+		<a href="../templates/index.html" class="logo fl"><img src="{% static 'images/logo.png' %}"></a>
+		<div class="search_con fl">
+            <form action="/search" method="get">
+			    <input type="text" class="input_text fl" name="q" placeholder="搜索商品">
+			    <input type="submit" class="input_btn fr" name="" value="搜索">
+            </form>
+		</div>
+		<div class="guest_cart fr">
+			<a href="cart.html" class="cart_name fl">我的购物车</a>
+			<div class="goods_count fl" id="show_count">{{ cart_count }}</div>
+		</div>
+	</div>
+
+	<div class="navbar_con">
+		<div class="navbar clearfix">
+			<div class="subnav_con fl">
+				<h1>全部商品分类</h1>
+				<span></span>
+				<ul class="subnav">
+					<li><a href="{% url 'goods:list' 1 1 %}" class="fruit">新鲜水果</a></li>
+					<li><a href="{% url 'goods:list' 2 1 %}" class="seafood">海鲜水产</a></li>
+					<li><a href="{% url 'goods:list' 3 1 %}" class="meet">猪牛羊肉</a></li>
+					<li><a href="{% url 'goods:list' 4 1 %}" class="egg">禽类蛋品</a></li>
+					<li><a href="{% url 'goods:list' 5 1 %}" class="vegetables">新鲜蔬菜</a></li>
+					<li><a href="{% url 'goods:list' 6 1 %}" class="ice">速冻食品</a></li>
+				</ul>
+			</div>
+			<ul class="navlist fl">
+				<li><a href="">首页</a></li>
+				<li class="interval">|</li>
+				<li><a href="">手机生鲜</a></li>
+				<li class="interval">|</li>
+				<li><a href="">抽奖</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="breadcrumb">
+		<a href="#">搜索结果</a>
+		<span>></span>
+		<a href="#">{{ query }}</a>
+	</div>
+
+	<div class="main_wrap clearfix">
+
+		<div class="r_wrap fr clearfix">
+
+
+			<ul class="goods_type_list clearfix">
+                {% for item in page %}
+				<li>
+					<a href="{% url 'goods:detail' item.object.id %}"><img src="{{ item.object.image.url }}"></a>
+					<h4><a href="{% url 'goods:detail' item.object.id %}">{{ item.object.name }}</a></h4>
+					<div class="operate">
+						<span class="prize">￥{{ item.object.price }}</span>
+						<span class="unit">{{ item.object.price }}/{{ item.object.unite }}</span>
+						<a href="#" class="add_goods" title="加入购物车"></a>
+					</div>
+				</li>
+                {% empty %}
+                    <h3 style="color:red;">您搜索的商品&nbsp;{{ query }}&nbsp;不存在！</h3>
+                {% endfor %}
+			</ul>
+
+			<div class="pagenation">
+                {% if page.has_previous %}
+				<a href="/search?q={{ query }}&page={{ page.previous_page_number }}"><上一页</a>
+                {% endif %}
+                {% for index in paginator.page_range %}
+                    {% if index == page.number  %}
+        				<a href="/search?q={{ query }}&page={{ index }}" class="active">{{ index }}</a>
+                    {% else %}
+                        <a href="/search?q={{ query }}&page={{ index }}">{{ index }}</a>
+                    {% endif %}
+
+                {% endfor %}
+                {% if page.has_next %}
+				<a href="/search?q={{ query }}&page={{ page.next_page_number }}">下一页></a>
+                {% endif %}
+			</div>
+		</div>
+	</div>
+
+	<div class="footer">
+		<div class="foot_link">
+			<a href="#">关于我们</a>
+			<span>|</span>
+			<a href="#">联系我们</a>
+			<span>|</span>
+			<a href="#">招聘人才</a>
+			<span>|</span>
+			<a href="#">友情链接</a>
+		</div>
+		<p>CopyRight © 2016 北京天天生鲜信息技术有限公司 All Rights Reserved</p>
+		<p>电话：010-****888    京ICP备*******8号</p>
+	</div>
+
+</body>
+</html>
